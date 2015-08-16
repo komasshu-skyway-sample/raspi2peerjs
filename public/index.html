@@ -278,7 +278,7 @@
 
         <script>
         (function(){
-          $("#signalling_server").val(localStorage.signalling_server || "null")
+          $("#signalling_server").val(localStorage.signalling_server || "localhost:9000")
             .on("change", function(ev){
               var val = $(this).val();
               localStorage.signalling_server = val;
