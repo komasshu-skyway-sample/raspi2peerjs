@@ -47,17 +47,48 @@ var raspiSocket = new WebSocket("ws://" + raspi_addr + ":" + raspi_port + raspi_
 
 raspiSocket.on("open", function(){
     logger.info("connection established for raspisocket");
-
-    var test_command = { "command_id": "offer" };
-    this.send(JSON.stringify(test_command));
 });
 
 raspiSocket.on("close", function(){
     logger.info("closed connection to raspisocket");
 });
 
-raspiSocket.on("message", function(data){
-    logger.info("message received from raspi", data);
+raspiSocket.on("message", function(msg){
+    logger.info("message received from raspi", msg);
+
+    try{
+      // check whether peer connection is established or not.
+      if(!peer_id) {
+        logger.warn("receive message from raspi-cam, but there is no peer connection");
+        return;
+      }
+
+      var msg_ = JSON.parse(msg);
+      var type = null;
+
+      switch(msg_.type) {
+      case "offer":
+        type = "OFFER";
+        break;
+      case "geticecandidate":
+        type = "CANDIDATE";
+        break;
+      default:
+      }
+
+      if(type) {
+        peerjsSocket.send(JSON.stringify({
+          "type": type,
+          "src": myid,
+          "dst": peer_id,
+          "payload": msg_
+        }));
+      } else {
+        logger.warn("received invalid message from raspi-cam");
+      }
+    } catch(e) {
+      logger.error(e);
+    }
 });
 
 
@@ -65,7 +96,8 @@ raspiSocket.on("message", function(data){
 // adapter for raspberry pi uv4l server
 
 var myid = util.randomId()
-  , token = util.randomToken();
+  , token = util.randomToken()
+  , peer_id = null;
 
 var peerjs_url = [
   peerjs_scheme,
@@ -77,6 +109,7 @@ var peerjs_url = [
   "&id=" + myid,
   "&token=" + token
 ].join("");
+
 
 var peerjsSocket = new WebSocket(peerjs_url, { "origin": origin });
 
@@ -93,8 +126,39 @@ peerjsSocket.on("close", function(){
     logger.info("closed connection to peerjsSocket");
 });
 
-peerjsSocket.on("message", function(data){
-    logger.info("message received from peerjs server", data);
+peerjsSocket.on("message", function(msg){
+    logger.info("message received from peerjs server", msg);
+
+    try{
+      var msg_ = JSON.parse(msg);
+      var data = null;
+
+      switch(msg_.type) {
+      case "OPEN":
+        return;
+        break;
+      case "OFFER":
+        peer_id = msg_.src;
+        data = msg_.payload;
+        break;
+      case "ANSWER":
+      case "CANDIDATE":
+      case "LEAVE":
+        if(!!peer_id || peer_id === msg_.src) {
+          data = msg_.payload;
+        }
+        break;
+      default:
+      }
+
+      if(data) {
+        raspiSocket.send(JSON.stringify(data));
+      } else {
+        logger.warn("received invalid message from peer server");
+      }
+    } catch(e) {
+      logger.error(e);
+    }
 });
 
 //////////////////////////////////////////////////////////////////////////
