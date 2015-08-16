@@ -1,0 +1,21 @@
+{
+  "name": "raspi2peerjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "raspberry",
+    "pi"
+  ],
+  "author": "kensaku.komatsu",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.13.3",
+    "log4js": "^0.6.26",
+    "peerjs": "^0.3.14",
+    "ws": "^0.7.2"
+  }
+}
