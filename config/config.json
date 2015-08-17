@@ -1,0 +1,16 @@
+{
+  "raspi" : {
+    "scheme": "ws://",
+    "addr": "192.168.0.18",
+    "port": 8080,
+    "path": "/stream/webrtc"
+  },
+  "peerjs": {
+    "scheme": "wss://",
+    "addr": "skyway.io",
+    "port": 443,
+    "path": "/",
+    "apikey": "db07bbb6-4ee8-4eb7-b0c2-b8b2e5c69ef9",
+    "origin4api": "http://localhost"
+  }
+}

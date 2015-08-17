@@ -18,8 +18,8 @@
             var ws = null
             var myid = util.randomid()
             var token = util.randomtoken();
-            var scheme = location.protocol === "http:" ? "ws://": "wss://";
-            var API_KEY = "peerjs" || "db07bbb6-4ee8-4eb7-b0c2-b8b2e5c69ef9";
+            var scheme = "wss://"; // location.protocol === "http:" ? "ws://": "wss://";
+            var API_KEY = "db07bbb6-4ee8-4eb7-b0c2-b8b2e5c69ef9";
             var server, dst;
 
             var pc;
@@ -192,8 +192,11 @@
                                 }
                                 document.documentElement.style.cursor ='default';
                                 break;
+                            case "PING":
+                                ws.send(JSON.stringify({"type": "PONG"}));
+                                break;
                             default:
-                                console.log(msg.data);
+                                console.log(msg.payload);
                                 break;
                         }
                     };
@@ -278,7 +281,7 @@
 
         <script>
         (function(){
-          $("#signalling_server").val(localStorage.signalling_server || "localhost:9000")
+          $("#signalling_server").val(localStorage.signalling_server || "skyway.io")
             .on("change", function(ev){
               var val = $(this).val();
               localStorage.signalling_server = val;

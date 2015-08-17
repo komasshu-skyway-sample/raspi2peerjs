@@ -3,17 +3,18 @@ var express = require('express')
   , app = express()
   , logger = require('log4js').getLogger()
   , WebSocket = require('ws')
+  , conf = require('./config/config.json')
 
 var port = process.env.PORT || 3000
-  , raspi_addr = process.env.RASPI_ADDR || "192.168.0.18"
-  , raspi_port = process.env.RASPI_PORT || 8080
-  , raspi_path = process.env.RASPI_PATH || "/stream/webrtc"
-  , peerjs_scheme = process.env.PEERJS_SCHEME || "ws://" || "wss://"
-  , peerjs_addr = process.env.PEERJS_ADDR || "localhost" || "skyway.io"
-  , peerjs_port = process.env.PEERJS_PORT || 9000 || 443
-  , peerjs_path = process.env.PEERJS_PATH || "/"
-  , peerjs_key = process.env.PEERJS_APIKEY || "peerjs" || "db07bbb6-4ee8-4eb7-b0c2-b8b2e5c69ef9"
-  , origin = process.env.ORIGIN || "http://localhost"
+  , raspi_addr = process.env.RASPI_ADDR || conf.raspi.addr
+  , raspi_port = process.env.RASPI_PORT || conf.raspi.port
+  , raspi_path = process.env.RASPI_PATH || conf.raspi.path
+  , peerjs_scheme = process.env.PEERJS_SCHEME || conf.peerjs.scheme
+  , peerjs_addr = process.env.PEERJS_ADDR || conf.peerjs.addr
+  , peerjs_port = process.env.PEERJS_PORT || conf.peerjs.port
+  , peerjs_path = process.env.PEERJS_PATH || conf.peerjs.path
+  , peerjs_key = process.env.PEERJS_APIKEY || conf.peerjs.apikey
+  , origin = process.env.ORIGIN || conf.peerjs.origin4api
 
 app.use(express.static(__dirname + '/public'));
 
@@ -77,12 +78,15 @@ raspiSocket.on("message", function(msg){
       }
 
       if(type) {
-        peerjsSocket.send(JSON.stringify({
+        var obj = {
           "type": type,
           "src": myid,
           "dst": peer_id,
           "payload": msg_
-        }));
+        };
+        logger.info(obj);
+        peerjsSocket.send(JSON.stringify(obj));
+
       } else {
         logger.warn("received invalid message from raspi-cam");
       }
@@ -148,13 +152,17 @@ peerjsSocket.on("message", function(msg){
           data = msg_.payload;
         }
         break;
+      case "PING":
+        this.send(JSON.stringify({"type": "PONG"}));
+        break;
       default:
+        break;
       }
 
       if(data) {
         raspiSocket.send(JSON.stringify(data));
       } else {
-        logger.warn("received invalid message from peer server");
+        if(msg_.type !=="PING") logger.warn("received invalid message from peer server");
       }
     } catch(e) {
       logger.error(e);
