@@ -80,8 +80,8 @@ raspiSocket.on("message", function(msg){
       if(type) {
         var obj = {
           "type": type,
-          "src": myid,
-          "dst": peer_id,
+          "src": myid.toString(),
+          "dst": peer_id.toString(),
           "payload": msg_
         };
         logger.info(obj);
