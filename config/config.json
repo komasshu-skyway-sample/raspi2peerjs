@@ -1,7 +1,7 @@
 {
   "raspi" : {
     "scheme": "ws://",
-    "addr": "192.168.0.18",
+    "addr": "localhost",
     "port": 8080,
     "path": "/stream/webrtc"
   },
